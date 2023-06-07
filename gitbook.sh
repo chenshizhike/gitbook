@@ -11,17 +11,21 @@ function get_port()
         msg=`netstat -nlat|tail -n +3|awk '{print $4}'|grep $port`
         if [ "$msg"x == "x" ]; then
             echo $port
-            exit 0
+            return 0
         fi
     done
 
     if [ "$port" == 65536 ]; then
-        exit 1
+        return 1
     fi
 }
 
 if [ "$1" == serve ]; then
     port=`get_port`
+    if [ "$?" != "0" ]; then 
+        echo "port=$port,所有端口已占有！"
+        exit 1
+    fi
     docker run -d --rm -v `pwd`:/gitbook -p $port:$port gitbook --port $port serve
 else
     docker run --rm -v `pwd`:/gitbook gitbook $1
